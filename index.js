@@ -1,12 +1,11 @@
 window.addEventListener("DOMContentLoaded", async () => {
 
   const db = await (async () => {
-    const dbOpenReq = window.indexedDB.open("pass");
+    const dbOpenReq = window.indexedDB.open("pass", 2);
     dbOpenReq.onerror = console.log;
     dbOpenReq.onupgradeneeded = (e) => {
       console.log("upgrade needed at db init");
-      const _db = e.target.result;
-      const store = _db.createObjectStore("passwords");
+      e.target.result.createObjectStore("passwords");
     };
     return (await new Promise(r => dbOpenReq.onsuccess = r)).target.result;
   })();
@@ -20,7 +19,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("submit").onclick = async () => {
     const id = form.elements.form_id.value;
     const pass = form.elements.form_pass.value;
-    const transaction = db.transaction(["passwords"], "readwrite");
+    // const transaction = db.transaction(["passwords"], "readwrite");
+    let transaction;
+    try {
+      transaction = db.transaction(["passwords"], "readwrite");
+      
+    } catch (error) {
+      console.log(error);
+    }
     const store = transaction.objectStore("passwords");
 
     transaction.onerror = console.log;
